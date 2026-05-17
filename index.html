@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIE1008 期末報告程式碼管理系統</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter & JetBrains Mono Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- PrismJS Dark Theme for Code Highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'SF Pro Display', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            darkBg: '#0b0f19',
+                            darkCard: '#151d30',
+                            accent: '#06b6d4'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #090d16;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+        
+        /* Modern scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #06b6d4;
+        }
+        
+        .glass-panel {
+            background: rgba(21, 29, 48, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #22d3ee 0%, #34d399 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="text-slate-200 antialiased min-h-screen flex flex-col font-sans">
+
+    <!-- Navigation Bar -->
+    <header class="sticky top-0 z-40 w-full glass-panel border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <!-- Tech Accent Logo Icon -->
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-emerald-400 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                    <svg class="w-5.5 h-5.5 text-slate-950 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9.75L16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-wider text-white">CIE1008 組員期末報告管理系統</h1>
+                    <p class="text-xs text-slate-400 font-mono">Class 02 Team 8</p>
+                </div>
+            </div>
+            
+            <!-- Page Tabs Switcher -->
+            <nav class="flex space-x-1 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
+                <button onclick="switchTab('spec')" id="tab-spec-btn" class="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 bg-gradient-to-r from-cyan-500/20 to-emerald-500/20 text-cyan-400 border border-cyan-500/30">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                    </svg>
+                    <span>程式碼規範</span>
+                </button>
+                <button onclick="switchTab('progress')" id="tab-progress-btn" class="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 text-slate-400 hover:text-white">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+                    </svg>
+                    <span>進度管理</span>
+                </button>
+            </nav>
+            
+            <!-- Removed settings trigger for security -->
+            <div class="w-4"></div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col justify-stretch">
+        
+        <!-- Tab 1: Code Spec Page (Notion Iframe) -->
+        <section id="tab-spec-section" class="w-full flex-grow flex flex-col space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+                <div>
+                    <h2 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                        程式碼編寫與提交規範 
+                        <span class="text-xs bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded font-normal font-mono">Notion</span>
+                    </h2>
+                    <p class="text-slate-400 text-sm mt-1">為了避免創造屎山，在建立相關功能、檔案時請先看一看</p>
+                </div>
+                <!-- Action Buttons: Edit Spec & Open New Tab -->
+                <div class="flex items-center space-x-2">
+                    <a href="https://www.notion.so/3632a93019c680e09c3df2feb9676ac6?source=copy_link" target="_blank" class="flex items-center space-x-1.5 text-xs text-slate-950 font-bold hover:opacity-90 transition-all bg-gradient-to-r from-cyan-400 to-emerald-400 px-3.5 py-2.5 rounded-lg shadow-md shadow-cyan-500/10">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                        </svg>
+                        <span>編輯規範 (Notion)</span>
+                    </a>
+                    <a href="https://midnight-lighter-b01.notion.site/ebd//3632a93019c680e09c3df2feb9676ac6" target="_blank" class="flex items-center space-x-1.5 text-xs text-slate-400 hover:text-cyan-400 transition-colors bg-slate-900 px-3 py-2.5 rounded-lg border border-slate-800">
+                        <span>在新分頁開啟</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="flex-grow rounded-2xl overflow-hidden border border-slate-800 shadow-2xl relative min-h-[600px] bg-[#1a1a1a]">
+                <!-- Notion Iframe Integration -->
+                <iframe src="https://midnight-lighter-b01.notion.site/ebd//3632a93019c680e09c3df2feb9676ac6" width="100%" height="700px" frameborder="0" allowfullscreen class="w-full h-full block min-h-[700px]"></iframe>
+            </div>
+        </section>
+
+        <!-- Tab 2: GitHub Progress & Management Page -->
+        <section id="tab-progress-section" class="hidden w-full flex-grow flex flex-col space-y-6">
+            
+            <!-- Dashboard Controls Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-panel p-6 rounded-2xl">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        組員程式碼繳交進度 
+                        <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-normal font-mono">Live Sync</span>
+                    </h2>
+                </div>
+                
+                <!-- Action Buttons Container -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <button onclick="refreshData()" class="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2.5 rounded-xl border border-slate-700/60 text-sm font-medium transition-all duration-150">
+                        <svg id="refresh-icon" class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18" />
+                        </svg>
+                        <span>重新整理</span>
+                    </button>
+                    
+                    <button onclick="triggerFileInput()" class="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-slate-950 px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/10 transition-all duration-150">
+                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                        </svg>
+                        <span>提交新程式碼</span>
+                    </button>
+                    <input type="file" id="file-uploader-input" accept=".py" class="hidden" onchange="handleFileSelection(event)">
+                </div>
+            </div>
+
+            <!-- Repository Info Pill Banner -->
+            <div class="flex flex-wrap gap-2 text-xs font-mono text-slate-400">
+                <span class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    安全連線已啟用
+                </span>
+                <span class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-1">
+                    路徑: <strong class="text-slate-300">codedata/</strong>
+                </span>
+                <span id="target-read-ref-badge" class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-1">
+                    讀取源: <strong class="text-cyan-400">github</strong>
+                </span>
+                <span id="target-write-branch-badge" class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-1">
+                    上傳目標: <strong class="text-emerald-400">main</strong>
+                </span>
+            </div>
+
+            <!-- Main File Management Workspace Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch min-h-[500px]">
+                
+                <!-- Left Section: Group Student Folders List (cols-4) -->
+                <div class="lg:col-span-4 flex flex-col space-y-3">
+                    <div class="text-xs font-semibold uppercase tracking-wider text-slate-500 px-1">
+                        組員學號資料夾 僅用來存放.py檔紀錄
+                    </div>
+                    
+                    <div id="folders-list-container" class="glass-panel rounded-2xl overflow-y-auto max-h-[550px] flex-grow p-2 space-y-1">
+                        <!-- Loading Indicator Placeholder -->
+                        <div class="p-8 text-center text-slate-500 flex flex-col items-center justify-center space-y-2">
+                            <svg class="animate-spin h-8 w-8 text-cyan-500" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="text-sm font-mono text-slate-400">正在讀取 GitHub 資料夾樹...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Section: Code View / Details (cols-8) -->
+                <div class="lg:col-span-8 flex flex-col">
+                    <div class="text-xs font-semibold uppercase tracking-wider text-slate-500 px-1 mb-3 flex justify-between items-center">
+                        <span>目前選取的檔案內容預覽</span>
+                        <span id="current-viewing-path" class="text-slate-400 font-mono normal-case">無選取任何檔案</span>
+                    </div>
+                    
+                    <div id="code-panel-container" class="glass-panel rounded-2xl p-6 flex flex-col justify-center items-center text-center flex-grow min-h-[450px] relative bg-slate-900/40">
+                        <!-- Default empty state -->
+                        <div id="code-empty-state" class="max-w-md mx-auto space-y-4">
+                            <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto text-cyan-400">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-white">點選左側檔案以查看原始碼</h3>
+                                <p class="text-slate-400 text-sm mt-1">選取任何組員目錄下的 Python (.py) 提交記錄檔，此處將自動連線並提供高亮渲染語法查看。</p>
+                            </div>
+                        </div>
+
+                        <!-- Active code presentation layout (hidden initially) -->
+                        <div id="code-display-layout" class="hidden w-full h-full flex flex-col space-y-4 text-left">
+                            <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                                <div class="flex items-center space-x-2">
+                                    <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                                    <span id="code-filename-label" class="font-mono text-sm font-semibold text-white">202605172200.py</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="copyCodeToClipboard()" class="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                        </svg>
+                                        <span>複製內容</span>
+                                    </button>
+                                    <button onclick="downloadCodeFile()" class="flex items-center space-x-1.5 bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                        </svg>
+                                        <span>下載檔案</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="relative overflow-auto max-h-[420px] rounded-xl border border-slate-800 flex-grow bg-slate-950">
+                                <pre class="p-4 !m-0 !bg-transparent"><code id="code-preview-block" class="language-python"># 程式碼載入中...</code></pre>
+                            </div>
+                        </div>
+                        
+                        <!-- Mini loading indicator for code block -->
+                        <div id="code-loading-indicator" class="hidden absolute inset-0 bg-slate-950/80 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                            <div class="text-center space-y-3">
+                                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-500 mx-auto"></div>
+                                <p class="text-sm font-mono text-cyan-400">正在下載最新檔案資料...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="w-full border-t border-slate-900 bg-slate-950/80 py-4 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
+            <p>© 2026 CIE1008 Team 8. All rights reserved.</p>
+            <p class="font-mono mt-1 sm:mt-0">Design & System Powered by GitHub REST API</p>
+        </div>
+    </footer>
+
+    <!-- MODAL 1: Ask Student ID Modal -->
+    <div id="upload-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-slate-800 animate-in fade-in zoom-in-95 duration-200">
+            <div class="bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 p-6 border-b border-slate-800">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <svg class="w-5.5 h-5.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        確認組員提交資訊
+                    </h3>
+                    <button onclick="closeUploadModal()" class="text-slate-400 hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                <p class="text-xs text-slate-400 mt-2">請提供對應的組員資訊。系統將自動為 Python 程式檔重新命名並放入目標資料夾。</p>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <!-- Selected original file indicator -->
+                <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center justify-between">
+                    <div>
+                        <span class="text-xs text-slate-500 block">已選取檔案</span>
+                        <span id="modal-orig-filename" class="text-sm font-mono text-slate-300 font-semibold truncate max-w-[200px] block">test_code.py</span>
+                    </div>
+                    <span class="text-xs bg-slate-800 text-cyan-400 border border-cyan-500/10 px-2 py-1 rounded font-mono">.py 檔案</span>
+                </div>
+
+                <!-- Input for Student ID 3-digits -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">組員學號末三碼</label>
+                    <div class="relative">
+                        <input type="text" id="student-id-input" placeholder="例如：027, 054, 123" maxlength="3" 
+                               class="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 rounded-xl px-4 py-3 text-slate-200 font-mono tracking-widest text-lg placeholder-slate-700 outline-none transition-all">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-600 font-mono text-xs">
+                            3 DIGITS
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500">此輸入將決定此程式碼會存入 <code class="text-cyan-400">codedata/{末三碼}/</code> 目錄中。</p>
+                </div>
+
+                <!-- Generated Target Filename Display -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">預計儲存名稱與格式</label>
+                    <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl font-mono text-xs text-emerald-400 flex flex-col space-y-1">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">檔名格式:</span>
+                            <span>YYYYMMDDHHMM.py</span>
+                        </div>
+                        <div class="flex justify-between font-bold border-t border-slate-900 pt-1 mt-1">
+                            <span class="text-slate-500">即將產生:</span>
+                            <span id="modal-generated-filename" class="text-emerald-300">YYYYMMDDHHMM.py</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Modal Actions -->
+            <div class="p-6 bg-slate-900/40 border-t border-slate-800/80 flex justify-end space-x-3">
+                <button onclick="closeUploadModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium transition-all">
+                    取消
+                </button>
+                <button onclick="executeGithubUpload()" id="btn-submit-upload" class="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-slate-950 px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/5 transition-all flex items-center space-x-2">
+                    <span id="upload-btn-text">確認並上傳</span>
+                    <svg id="upload-btn-spinner" class="hidden animate-spin h-4 w-4 text-slate-950" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION SYSTEM CONTAINER -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-3 max-w-sm w-full"></div>
+
+    <!-- Script Logic Container -->
+    <script>
+        // System Config State (Securely set internally)
+        const config = {
+            owner: 'Bobkao0527',
+            repo: 'cie1008t8',
+            readRef: '7bbf84359f06020882168173ae5f1160670f1a60', // SHA point in user request
+            writeBranch: 'main', // Target writable branch
+            token: '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'
+        };
+
+        // Cache for loaded repository structured content
+        let repositoryDataCache = {};
+        // Store selected file info for uploading
+        let uploadFilePayload = null;
+        
+        // Active display file information cache
+        let activeFileContent = '';
+        let activeFileName = '';
+        let activeStudentId = ''; // 儲存目前選取的組員學號末三碼
+
+        window.onload = function() {
+            // Start reading initial directories from Git Repo
+            refreshData();
+        };
+
+        // Switch Tabs Functionality
+        function switchTab(tabId) {
+            const specTab = document.getElementById('tab-spec-section');
+            const progressTab = document.getElementById('tab-progress-section');
+            const specBtn = document.getElementById('tab-spec-btn');
+            const progressBtn = document.getElementById('tab-progress-btn');
+
+            if (tabId === 'spec') {
+                specTab.classList.remove('hidden');
+                progressTab.classList.add('hidden');
+                
+                specBtn.className = "flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 bg-gradient-to-r from-cyan-500/20 to-emerald-500/20 text-cyan-400 border border-cyan-500/30";
+                progressBtn.className = "flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 text-slate-400 hover:text-white";
+            } else {
+                specTab.classList.add('hidden');
+                progressTab.classList.remove('hidden');
+                
+                progressBtn.className = "flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-400 border border-emerald-500/30";
+                specBtn.className = "flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 text-slate-400 hover:text-white";
+            }
+        }
+
+        // Core Fetch Wrapper for GitHub REST API
+        async function fetchGitHubAPI(path, method = 'GET', body = null) {
+            const url = `https://api.github.com/repos/${config.owner}/${config.repo}/${path}`;
+            const headers = {
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            };
+            
+            // Inject Auth Header if Token exists
+            if (config.token && config.token.trim() !== "") {
+                headers['Authorization'] = `token ${config.token.trim()}`;
+            }
+
+            const options = { method, headers };
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) {
+                    const errorDetails = await response.json().catch(() => ({ message: 'Unresolved error description' }));
+                    throw new Error(errorDetails.message || `HTTP ${response.status}`);
+                }
+                return await response.json();
+            } catch (err) {
+                console.error("GitHub API Request Error:", err);
+                throw err;
+            }
+        }
+
+        // Read directory structure and render to folder UI
+        async function refreshData() {
+            const refreshIcon = document.getElementById('refresh-icon');
+            refreshIcon.classList.add('animate-spin');
+            
+            const foldersContainer = document.getElementById('folders-list-container');
+            foldersContainer.innerHTML = `
+                <div class="p-8 text-center text-slate-500 flex flex-col items-center justify-center space-y-2">
+                    <svg class="animate-spin h-8 w-8 text-cyan-500" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-sm font-mono text-slate-400">正在讀取最新目錄樹...</span>
+                </div>
+            `;
+
+            try {
+                // Fetch direct contents of /codedata path
+                const pathSuffix = `contents/codedata?ref=${config.readRef}`;
+                const data = await fetchGitHubAPI(pathSuffix);
+                
+                // Filter elements that are folders representing last 3 digits
+                const folders = data.filter(item => item.type === 'dir');
+                
+                if (folders.length === 0) {
+                    foldersContainer.innerHTML = `
+                        <div class="p-6 text-center text-slate-500 text-sm">
+                            在 codedata/ 目錄下未發現任何組員資料夾。
+                        </div>
+                    `;
+                    showToast('未找到任何組員學號資料夾', 'warning');
+                    return;
+                }
+
+                // Sorting folders alphabetically (student id last 3 digits)
+                folders.sort((a, b) => a.name.localeCompare(b.name));
+
+                // Clean the viewport elements
+                foldersContainer.innerHTML = '';
+                
+                // Fetch sub-items for each folder to list available .py files inside
+                for (let folder of folders) {
+                    const folderEl = document.createElement('div');
+                    folderEl.className = "mb-2 border border-slate-800/40 rounded-xl overflow-hidden bg-slate-900/30 hover:border-slate-800 transition-all";
+                    
+                    const folderHeader = document.createElement('button');
+                    folderHeader.onclick = () => toggleFolderUI(folder.name);
+                    folderHeader.className = "w-full flex items-center justify-between p-3.5 text-left text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800/30 transition-all";
+                    folderHeader.innerHTML = `
+                        <div class="flex items-center space-x-2.5 min-w-0 flex-1">
+                            <div class="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 shrink-0">
+                                <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                </svg>
+                            </div>
+                            <div class="truncate">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-semibold text-slate-300">學號末三碼: <strong class="font-mono text-cyan-400 tracking-wider">${folder.name}</strong></span>
+                                    <span id="badge-count-${folder.name}" class="text-[10px] px-1.5 py-0.5 rounded-md font-mono bg-slate-800 text-slate-400 border border-slate-700">讀取中...</span>
+                                </div>
+                                <div id="subtext-time-${folder.name}" class="text-[10px] text-slate-500 mt-0.5 font-mono truncate">
+                                    正在同步最近更新時間...
+                                </div>
+                            </div>
+                        </div>
+                        <svg id="folder-arrow-${folder.name}" class="w-4 h-4 text-slate-500 transform transition-transform shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    `;
+                    folderEl.appendChild(folderHeader);
+
+                    // Child Files List container
+                    const filesContainer = document.createElement('div');
+                    filesContainer.id = `folder-files-${folder.name}`;
+                    filesContainer.className = "hidden px-3 pb-3 space-y-1 border-t border-slate-900 bg-slate-950/20";
+                    
+                    // Show small mini-spinner inside folder
+                    filesContainer.innerHTML = `
+                        <div class="p-4 text-center text-xs text-slate-500 flex items-center justify-center gap-1.5">
+                            <div class="animate-spin rounded-full h-3.5 w-3.5 border-b border-cyan-500"></div>
+                            <span>讀取檔案...</span>
+                        </div>
+                    `;
+                    folderEl.appendChild(filesContainer);
+                    foldersContainer.appendChild(folderEl);
+
+                    // Asynchronously trigger loading contents inside this directory
+                    loadFolderContents(folder.name);
+                }
+
+                showToast('已同步 GitHub 儲存庫結構！', 'success');
+
+            } catch (err) {
+                foldersContainer.innerHTML = `
+                    <div class="p-6 text-center text-slate-500">
+                        <div class="text-rose-400 font-semibold mb-2 flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                            讀取失敗
+                        </div>
+                        <p class="text-xs font-mono max-w-xs mx-auto text-slate-400">${err.message}</p>
+                    </div>
+                `;
+                showToast('載入失敗：請確認網路狀況或 Token 存取權限。', 'error');
+            } finally {
+                refreshIcon.classList.remove('animate-spin');
+            }
+        }
+
+        // Toggle Expanded State of folders
+        function toggleFolderUI(folderName) {
+            const el = document.getElementById(`folder-files-${folderName}`);
+            const arrow = document.getElementById(`folder-arrow-${folderName}`);
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                arrow.classList.add('rotate-180');
+            } else {
+                el.classList.add('hidden');
+                arrow.classList.remove('rotate-180');
+            }
+        }
+
+        // Load files list of a single subfolder
+        async function loadFolderContents(folderName) {
+            const filesContainer = document.getElementById(`folder-files-${folderName}`);
+            const badgeCount = document.getElementById(`badge-count-${folderName}`);
+            const subtextTime = document.getElementById(`subtext-time-${folderName}`);
+            
+            try {
+                const endpoint = `contents/codedata/${folderName}?ref=${config.readRef}`;
+                const data = await fetchGitHubAPI(endpoint);
+                
+                // Target .py files inside sub-folder
+                const pythonFiles = data.filter(item => item.name.endsWith('.py'));
+                const fileCount = pythonFiles.length;
+
+                // Update dynamic folder header stats badges
+                if (fileCount === 0) {
+                    if (badgeCount) {
+                        badgeCount.className = "text-[10px] px-1.5 py-0.5 rounded-md font-mono bg-rose-500/10 text-rose-400 border border-rose-500/20";
+                        badgeCount.innerText = "尚未上傳任何檔案";
+                    }
+                    if (subtextTime) {
+                        subtextTime.className = "text-[10px] text-slate-600 mt-0.5 font-mono truncate";
+                        subtextTime.innerText = "尚無任何更新紀錄";
+                    }
+                    
+                    filesContainer.innerHTML = `
+                        <div class="p-3 text-center text-xs text-slate-600 italic">
+                            資料夾空無檔案
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Sort files by name in reverse order (newest dates will go on top)
+                pythonFiles.sort((a, b) => b.name.localeCompare(a.name));
+
+                // Parse the newest file date (assuming YYYYMMDDHHMM.py format)
+                const newestFile = pythonFiles[0].name;
+                const dateMatch = newestFile.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})\.py$/);
+                let formattedTime = "";
+                
+                if (dateMatch) {
+                    formattedTime = `最近更新: ${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]} ${dateMatch[4]}:${dateMatch[5]}`;
+                } else {
+                    formattedTime = `最近更新: ${newestFile}`; // Fallback to filename if not standard date format
+                }
+
+                // Apply values to UI headers
+                if (badgeCount) {
+                    badgeCount.className = "text-[10px] px-1.5 py-0.5 rounded-md font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                    badgeCount.innerText = `已繳交 ${fileCount} 份`;
+                }
+                if (subtextTime) {
+                    subtextTime.className = "text-[10px] text-slate-400 mt-0.5 font-mono truncate";
+                    subtextTime.innerText = formattedTime;
+                }
+
+                filesContainer.innerHTML = '';
+                pythonFiles.forEach(file => {
+                    const btn = document.createElement('button');
+                    btn.onclick = () => selectCodeFile(folderName, file.name, file.download_url);
+                    btn.className = "w-full flex items-center justify-between px-3 py-2 text-xs font-mono rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-900/80 transition-all text-left";
+                    btn.innerHTML = `
+                        <div class="flex items-center space-x-2 truncate">
+                            <svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span class="truncate">${file.name}</span>
+                        </div>
+                        <span class="text-[10px] bg-slate-900 text-slate-500 px-1.5 py-0.5 rounded shrink-0">VIEW</span>
+                    `;
+                    filesContainer.appendChild(btn);
+                });
+
+            } catch (err) {
+                console.error(`Error loading folder ${folderName}:`, err);
+                
+                if (badgeCount) {
+                    badgeCount.className = "text-[10px] px-1.5 py-0.5 rounded-md font-mono bg-rose-500/10 text-rose-400 border border-rose-500/20";
+                    badgeCount.innerText = "錯誤";
+                }
+                if (subtextTime) {
+                    subtextTime.className = "text-[10px] text-rose-500/80 mt-0.5 font-mono truncate";
+                    subtextTime.innerText = "無法載入更新時間";
+                }
+
+                filesContainer.innerHTML = `
+                    <div class="p-3 text-center text-xs text-rose-500">
+                        無法讀取檔案
+                    </div>
+                `;
+            }
+        }
+
+        // Request code content of a Python file and render with Prism highlight
+        async function selectCodeFile(folderName, fileName, downloadUrl) {
+            const container = document.getElementById('code-panel-container');
+            const emptyState = document.getElementById('code-empty-state');
+            const displayLayout = document.getElementById('code-display-layout');
+            const loadingIndicator = document.getElementById('code-loading-indicator');
+            const pathLabel = document.getElementById('current-viewing-path');
+            const fileLabel = document.getElementById('code-filename-label');
+            const codeBlock = document.getElementById('code-preview-block');
+
+            emptyState.classList.add('hidden');
+            displayLayout.classList.remove('hidden');
+            loadingIndicator.classList.remove('hidden');
+
+            pathLabel.innerText = `codedata/${folderName}/${fileName}`;
+            fileLabel.innerText = `${fileName} (組員 ${folderName})`;
+
+            try {
+                // Use fetch to retrieve raw contents of the file
+                const response = await fetch(downloadUrl);
+                if (!response.ok) throw new Error("Could not download raw source file");
+                
+                const codeText = await response.text();
+                activeFileContent = codeText; // Cache file content locally
+                activeFileName = fileName; // Cache file name locally
+                activeStudentId = folderName; // 儲存該檔案的組員學號末三碼
+
+                // Insert into Prism block
+                codeBlock.textContent = codeText;
+                
+                // Re-trigger highlighting execution
+                Prism.highlightElement(codeBlock);
+
+            } catch (err) {
+                console.error("Source fetching failure:", err);
+                codeBlock.textContent = `# 無法載入程式碼內容 \n# 錯誤原因: ${err.message}`;
+                showToast('下載檔案內容失敗', 'error');
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        // Copy active viewing code to clipboard
+        function copyCodeToClipboard() {
+            if (!activeFileContent) {
+                showToast('沒有可供複製的程式碼！', 'warning');
+                return;
+            }
+
+            // Create temporary textarea for copying
+            const el = document.createElement('textarea');
+            el.value = activeFileContent;
+            document.body.appendChild(el);
+            el.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast('程式碼已成功複製到剪貼簿！', 'success');
+                } else {
+                    showToast('複製失敗，請手動複製。', 'warning');
+                }
+            } catch (err) {
+                showToast('無法複製此檔案內容。', 'error');
+            }
+            
+            document.body.removeChild(el);
+        }
+
+        // Download current code file as .py file
+        function downloadCodeFile() {
+            if (!activeFileContent || !activeFileName) {
+                showToast('沒有可供下載的檔案！', 'warning');
+                return;
+            }
+            try {
+                const blob = new Blob([activeFileContent], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                
+                // 在原本的檔名前加上「學號末三碼-」
+                const formattedFileName = `${activeStudentId}-${activeFileName}`;
+                a.download = formattedFileName;
+                
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast(`已成功下載 ${formattedFileName}！`, 'success');
+            } catch (err) {
+                console.error("Download failed:", err);
+                showToast('檔案下載失敗', 'error');
+            }
+        }
+
+        // Trigger Input File Action
+        function triggerFileInput() {
+            document.getElementById('file-uploader-input').click();
+        }
+
+        // User selected file action
+        function handleFileSelection(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Strict extension check for safety
+            if (!file.name.endsWith('.py')) {
+                showToast('僅接受上傳 Python (.py) 檔！', 'warning');
+                // Clean the input target
+                event.target.value = '';
+                return;
+            }
+
+            uploadFilePayload = file;
+            
+            // Format time dynamically to: YYYYMMDDHHMM
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const date = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            
+            const generatedName = `${year}${month}${date}${hours}${minutes}.py`;
+            
+            // Render on modal elements
+            document.getElementById('modal-orig-filename').innerText = file.name;
+            document.getElementById('modal-generated-filename').innerText = generatedName;
+            document.getElementById('student-id-input').value = ''; // Clean input
+            
+            // Open target confirmation modal
+            document.getElementById('upload-modal').classList.remove('hidden');
+        }
+
+        // Close upload verification modal
+        function closeUploadModal() {
+            document.getElementById('upload-modal').classList.add('hidden');
+            document.getElementById('file-uploader-input').value = ''; // Clean state
+            uploadFilePayload = null;
+        }
+
+        // Execute upload processing logic
+        function executeGithubUpload() {
+            const studentId = document.getElementById('student-id-input').value.trim();
+            
+            // Validate student ID format
+            if (!/^\d{3}$/.test(studentId)) {
+                showToast('請輸入正確的學號末三碼（必須是3位數字）！', 'warning');
+                return;
+            }
+
+            const generatedName = document.getElementById('modal-generated-filename').innerText;
+            const targetPath = `contents/codedata/${studentId}/${generatedName}`;
+
+            // Button Loading State
+            const btnSubmit = document.getElementById('btn-submit-upload');
+            const btnText = document.getElementById('upload-btn-text');
+            const spinner = document.getElementById('upload-btn-spinner');
+
+            btnSubmit.disabled = true;
+            btnText.innerText = "正在傳輸...";
+            spinner.classList.remove('hidden');
+
+            const reader = new FileReader();
+            
+            // On complete loading file to arrayBuffer convert to base64
+            reader.onload = async function(e) {
+                try {
+                    const contentBase64 = arrayBufferToBase64(e.target.result);
+                    
+                    // Body payload for PUT content request on Github API
+                    const payload = {
+                        message: `Upload member ${studentId} code at dynamic execution`,
+                        content: contentBase64,
+                        branch: config.writeBranch
+                    };
+
+                    // Send upload Request
+                    await fetchGitHubAPI(targetPath, 'PUT', payload);
+                    
+                    showToast(`檔案已成功上傳至 codedata/${studentId}/${generatedName} !`, 'success');
+                    closeUploadModal();
+                    
+                    // Hot-reload list layout to view uploads
+                    setTimeout(() => {
+                        refreshData();
+                    }, 1200);
+
+                } catch (err) {
+                    console.error("Uploading execution fail:", err);
+                    showToast(`上傳失敗: ${err.message}`, 'error');
+                } finally {
+                    // Reset Button Loading state
+                    btnSubmit.disabled = false;
+                    btnText.innerText = "確認並上傳";
+                    spinner.classList.add('hidden');
+                }
+            };
+
+            reader.readAsArrayBuffer(uploadFilePayload);
+        }
+
+        // Binary ArrayBuffer helper to base64 encoding (Handles all special characters cleanly)
+        function arrayBufferToBase64(buffer) {
+            let binary = '';
+            const bytes = new Uint8Array(buffer);
+            const len = bytes.byteLength;
+            for (let i = 0; i < len; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+
+        // Custom interactive visual system for alerts
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const toastId = `toast-${Date.now()}`;
+            toast.id = toastId;
+            
+            let typeClasses = 'bg-slate-900 border-slate-800 text-slate-300';
+            let iconSvg = '';
+
+            if (type === 'success') {
+                typeClasses = 'bg-emerald-950/90 border-emerald-500/30 text-emerald-300';
+                iconSvg = `
+                    <div class="p-1 rounded-lg bg-emerald-500/10 text-emerald-400">
+                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                `;
+            } else if (type === 'error') {
+                typeClasses = 'bg-rose-950/90 border-rose-500/30 text-rose-300';
+                iconSvg = `
+                    <div class="p-1 rounded-lg bg-rose-500/10 text-rose-400">
+                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    </div>
+                `;
+            } else if (type === 'warning') {
+                typeClasses = 'bg-amber-950/90 border-amber-500/30 text-amber-300';
+                iconSvg = `
+                    <div class="p-1 rounded-lg bg-amber-500/10 text-amber-400">
+                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    </div>
+                `;
+            }
+
+            toast.className = `p-4 border rounded-xl flex items-center space-x-3 shadow-2xl backdrop-blur-md animate-in slide-in-from-bottom-5 fade-in duration-300 ${typeClasses}`;
+            toast.innerHTML = `
+                ${iconSvg}
+                <div class="flex-grow text-xs font-semibold">${message}</div>
+                <button onclick="dismissToast('${toastId}')" class="text-slate-400 hover:text-white transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto dismiss in 4 seconds
+            setTimeout(() => {
+                dismissToast(toastId);
+            }, 4000);
+        }
+
+        // Manually dismiss toast
+        function dismissToast(id) {
+            const toast = document.getElementById(id);
+            if (toast) {
+                toast.classList.add('animate-out', 'fade-out', 'slide-out-to-bottom-5', 'duration-200');
+                setTimeout(() => {
+                    toast.remove();
+                }, 200);
+            }
+        }
+    </script>
+</body>
+</html>
