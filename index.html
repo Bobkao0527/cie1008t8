@@ -190,7 +190,7 @@
                     路徑: <strong class="text-slate-300">codedata/</strong>
                 </span>
                 <span id="target-read-ref-badge" class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-1">
-                    讀取源: <strong class="text-cyan-400">github</strong>
+                    讀取源: <strong id="read-ref-display" class="text-cyan-400">main</strong>
                 </span>
                 <span id="target-write-branch-badge" class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-1">
                     上傳目標: <strong class="text-emerald-400">main</strong>
@@ -375,7 +375,7 @@
         const config = {
             owner: 'Bobkao0527',
             repo: 'cie1008t8',
-            readRef: '7bbf84359f06020882168173ae5f1160670f1a60', // SHA point in user request
+            readRef: 'main', // 將讀取源改為 'main' 分支，以動態獲取最新上傳的檔案
             writeBranch: 'main' // Target writable branch
         };
 
@@ -390,6 +390,11 @@
         let activeStudentId = ''; // 儲存目前選取的組員學號末三碼
 
         window.onload = function() {
+            // 動態更新 UI 上的讀取源標記
+            const badge = document.getElementById('read-ref-display');
+            if (badge) {
+                badge.innerText = config.readRef;
+            }
             // Start reading initial directories from Git Repo
             refreshData();
         };
