@@ -185,13 +185,13 @@
                         <span>重新整理</span>
                     </button>
                     
-                    <button onclick="triggerFileInput()" class="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-slate-950 px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/10 transition-all duration-150">
-                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <button onclick="triggerFileInput()" class="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-slate-950 px-4 py-2.5 rounded-xl text-sm font-medium shadow-md shadow-emerald-500/10 transition-all duration-150">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                         </svg>
-                        <span>提交新程式碼</span>
+                        <span>提交程式碼</span>
                     </button>
-                    <input type="file" id="file-uploader-input" accept=".py" class="hidden" onchange="handleFileSelection(event)">
+                    <input type="file" id="file-uploader-input" accept=".py,.ipynb" class="hidden" onchange="handleFileSelection(event)">
 
                     <!-- Team Cloud Resources Shortcuts -->
                     <a href="https://onedrive.live.com/:w:/g/personal/635910fcd0a6af46/IQCycNIR_jrCQqqKwdIpie4LAc27eum7U-wIXoGsqhhs4wA?rtime=XtEYuFu23kg&redeem=aHR0cHM6Ly8xZHJ2Lm1zL3cvYy82MzU5MTBmY2QwYTZhZjQ2L0lRQ3ljTklSX2pyQ1FxcUt3ZElwaWU0TEFjMjdldW03VS13SVhvR3NxaGhzNHdBP2U9bE5HVzRW" target="_blank" class="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2.5 rounded-xl border border-slate-700/60 text-sm font-medium transition-all duration-150">
@@ -343,7 +343,7 @@
                         <span class="text-xs text-slate-500 block">已選取檔案</span>
                         <span id="modal-orig-filename" class="text-sm font-mono text-slate-300 font-semibold truncate max-w-[200px] block">test_code.py</span>
                     </div>
-                    <span class="text-xs bg-slate-800 text-cyan-400 border border-cyan-500/10 px-2 py-1 rounded font-mono">.py 檔案</span>
+                    <span id="modal-file-type-badge" class="text-xs bg-slate-800 text-cyan-400 border border-cyan-500/10 px-2 py-1 rounded font-mono">.py 檔案</span>
                 </div>
 
                 <!-- Input for Student ID 3-digits -->
@@ -857,19 +857,65 @@
         }
 
         // User selected file action
-        function handleFileSelection(event) {
+        async function handleFileSelection(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             // Strict extension check for safety
-            if (!file.name.endsWith('.py')) {
-                showToast('僅接受上傳 Python (.py) 檔！', 'warning');
+            if (!file.name.endsWith('.py') && !file.name.endsWith('.ipynb')) {
+                showToast('僅接受上傳 Python (.py) 或 Jupyter Notebook (.ipynb) 檔！', 'warning');
                 // Clean the input target
                 event.target.value = '';
                 return;
             }
 
-            uploadFilePayload = file;
+            let processFile = file;
+            let originalName = file.name;
+            const typeBadge = document.getElementById('modal-file-type-badge');
+
+            // 自動將 .ipynb 解析並轉換成 .py 格式
+            if (file.name.endsWith('.ipynb')) {
+                try {
+                    const text = await file.text();
+                    const notebook = JSON.parse(text);
+                    let pyCode = "# Auto-generated from " + originalName + "\n\n";
+                    
+                    if (notebook.cells && Array.isArray(notebook.cells)) {
+                        for (const cell of notebook.cells) {
+                            if (cell.cell_type === 'code') {
+                                const sourceCode = Array.isArray(cell.source) ? cell.source.join('') : cell.source;
+                                if (sourceCode.trim()) {
+                                    pyCode += "# --- Code Cell ---\n";
+                                    pyCode += sourceCode + "\n\n";
+                                }
+                            } else if (cell.cell_type === 'markdown') {
+                                const mdContent = Array.isArray(cell.source) ? cell.source.join('') : cell.source;
+                                if (mdContent.trim()) {
+                                    pyCode += "# --- Markdown Cell ---\n";
+                                    pyCode += mdContent.split('\n').map(line => '# ' + line).join('\n') + "\n\n";
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 將轉換結果打包成新的 File 物件交給後續流程處理
+                    processFile = new File([pyCode], file.name.replace('.ipynb', '.py'), { type: 'text/plain' });
+                    
+                    typeBadge.innerText = '.ipynb (自動轉 .py)';
+                    typeBadge.className = "text-xs bg-emerald-900/50 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded font-mono";
+                    showToast('已自動將 .ipynb 轉換為 .py 格式', 'info');
+                } catch (err) {
+                    console.error("IPYNB Parsing Error:", err);
+                    showToast('讀取或轉換 .ipynb 檔案失敗，請確認檔案格式', 'error');
+                    event.target.value = '';
+                    return;
+                }
+            } else {
+                typeBadge.innerText = '.py 檔案';
+                typeBadge.className = "text-xs bg-slate-800 text-cyan-400 border border-cyan-500/10 px-2 py-1 rounded font-mono";
+            }
+
+            uploadFilePayload = processFile;
             
             // Format time dynamically to: YYYYMMDDHHMM
             const now = new Date();
@@ -882,7 +928,7 @@
             const generatedName = `${year}${month}${date}${hours}${minutes}.py`;
             
             // Render on modal elements
-            document.getElementById('modal-orig-filename').innerText = file.name;
+            document.getElementById('modal-orig-filename').innerText = originalName;
             document.getElementById('modal-generated-filename').innerText = generatedName;
             document.getElementById('student-id-input').value = ''; // Clean input
             
