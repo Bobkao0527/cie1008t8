@@ -436,43 +436,34 @@
             const wrapper = document.getElementById('notion-wrapper');
             if (!wrapper) return;
 
-            // Detect mobile browser, iOS WebKit, or LINE/FB In-App Browsers
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 1024;
-            const isInApp = /Line|FBAN|FBAV|Instagram|Messenger/i.test(navigator.userAgent);
-
-            if (isMobile || isInApp) {
-                // If on mobile device, render a premium warning card with clean UX options
-                wrapper.innerHTML = `
-                    <div class="max-w-md mx-auto text-center space-y-6 py-12 px-6 animate-in fade-in zoom-in-95 duration-500">
-                        <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto text-amber-400 shadow-lg shadow-amber-500/5">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                            </svg>
-                        </div>
-                        <div class="space-y-2">
-                            <h3 class="text-lg font-bold text-white">行動裝置效能保護已啟動</h3>
-                            <p class="text-slate-400 text-xs leading-relaxed">
-                                偵測到您目前使用<span class="text-cyan-400">行動裝置</span>或 <span class="text-emerald-400">LINE 內建瀏覽器</span>。因手機記憶體限制，直接內嵌 Notion 非常容易導致系統強制重整或閃退。
-                            </p>
-                            <p class="text-slate-500 text-[11px]">
-                                為了最優質的閱讀與編輯體驗，我們極度建議您直接開啟 Notion。
-                            </p>
-                        </div>
-                        <div class="flex flex-col gap-2.5 pt-3">
-                            <a href="https://midnight-lighter-b01.notion.site/ebd//3632a93019c680e09c3df2feb9676ac6" target="_blank" class="w-full flex items-center justify-center space-x-2 text-xs text-slate-950 font-bold bg-gradient-to-r from-cyan-400 to-emerald-400 px-5 py-3 rounded-xl shadow-lg shadow-cyan-500/20 hover:opacity-95 transition-all">
-                                <span>🚀 使用外部瀏覽器 / Notion App 開啟</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                            </a>
-                            <button onclick="forceLoadNotionIframe()" class="w-full text-xs text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800/80 px-4 py-3 rounded-xl transition-all">
-                                我要冒著閃退風險，強制內置載入
-                            </button>
-                        </div>
+            // 移除裝置偵測，所有裝置預設啟用效能保護
+            wrapper.innerHTML = `
+                <div class="max-w-md mx-auto text-center space-y-6 py-12 px-6 animate-in fade-in zoom-in-95 duration-500">
+                    <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto text-amber-400 shadow-lg shadow-amber-500/5">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                        </svg>
                     </div>
-                `;
-            } else {
-                // On PC/Tablet browsers, render direct Notion embedded frame flawlessly
-                forceLoadNotionIframe();
-            }
+                    <div class="space-y-2">
+                        <h3 class="text-lg font-bold text-white">效能保護機制預設啟動</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            直接內嵌 Notion 在部分裝置或特定瀏覽器中，較容易導致強制重整或閃退
+                        </p>
+                        <p class="text-slate-500 text-[11px]">
+                            為了最優質的閱讀與編輯體驗，我們極度建議您直接於新分頁開啟 Notion
+                        </p>
+                    </div>
+                    <div class="flex flex-col gap-2.5 pt-3">
+                        <a href="https://midnight-lighter-b01.notion.site/ebd//3632a93019c680e09c3df2feb9676ac6" target="_blank" class="w-full flex items-center justify-center space-x-2 text-xs text-slate-950 font-bold bg-gradient-to-r from-cyan-400 to-emerald-400 px-5 py-3 rounded-xl shadow-lg shadow-cyan-500/20 hover:opacity-95 transition-all">
+                            <span>🚀 使用外部瀏覽器 / Notion App 開啟</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                        </a>
+                        <button onclick="forceLoadNotionIframe()" class="w-full text-xs text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800/80 px-4 py-3 rounded-xl transition-all">
+                            🔥 我要挑戰直接在這裡打開
+                        </button>
+                    </div>
+                </div>
+            `;
         }
 
         // Force renders Notion inside Iframe (standard action/user requested override)
