@@ -13,6 +13,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
     
+    <!-- Diff2Html & JSDiff for Code Comparison -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/7.0.0/diff.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html.min.js"></script>
+    
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -73,6 +78,15 @@
             background: linear-gradient(135deg, #22d3ee 0%, #34d399 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+        }
+        
+        /* Diff2Html custom wrapper to ensure readability */
+        .diff-container-wrapper {
+            background-color: #ffffff;
+            color: #333333;
+        }
+        .d2h-file-header {
+            display: none; /* Hide default header since we have our own dropdowns */
         }
     </style>
 </head>
@@ -277,6 +291,10 @@
                                     <span id="code-filename-label" class="font-mono text-sm font-semibold text-white">202605172200.py</span>
                                 </div>
                                 <div class="flex items-center space-x-2">
+                                    <button onclick="toggleDiffMode()" id="btn-toggle-diff" class="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-amber-500/20">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+                                        <span id="diff-mode-text">切換比對模式</span>
+                                    </button>
                                     <button onclick="copyCodeToClipboard()" class="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
@@ -291,8 +309,34 @@
                                     </button>
                                 </div>
                             </div>
+                            
+                            <!-- Diff Controls (Hidden by default) -->
+                            <div id="diff-controls-bar" class="hidden flex-col sm:flex-row gap-3 py-3 border-b border-slate-800/80 bg-slate-900/50 px-4 rounded-lg">
+                                <div class="flex-1 space-y-1">
+                                    <label class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">基準檔案 (Base)</label>
+                                    <select id="diff-base-select" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-2 text-xs text-slate-300 font-mono focus:border-cyan-500 outline-none">
+                                        <option value="">請選擇基準檔案...</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center justify-center pt-5 px-1 text-slate-600">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+                                </div>
+                                <div class="flex-1 space-y-1">
+                                    <label class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">比對檔案 (Target)</label>
+                                    <select id="diff-target-select" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-2 text-xs text-slate-300 font-mono focus:border-cyan-500 outline-none">
+                                        <option value="">請選擇目標檔案...</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-end">
+                                    <button onclick="executeDiff()" class="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-lg shadow-amber-500/20">
+                                        執行比對
+                                    </button>
+                                </div>
+                            </div>
+
                             <div class="relative overflow-auto max-h-[420px] rounded-xl border border-slate-800 flex-grow bg-slate-950">
-                                <pre class="p-4 !m-0 !bg-transparent"><code id="code-preview-block" class="language-python"># 程式碼載入中...</code></pre>
+                                <pre id="standard-code-wrapper" class="p-4 !m-0 !bg-transparent"><code id="code-preview-block" class="language-python"># 程式碼載入中...</code></pre>
+                                <div id="diff-output-wrapper" class="hidden diff-container-wrapper w-full h-full p-2"></div>
                             </div>
                         </div>
                         
@@ -418,6 +462,10 @@
         let activeFileContent = '';
         let activeFileName = '';
         let activeStudentId = ''; // 儲存目前選取的組員學號末三碼
+
+        // Diff 系統狀態變數
+        let isDiffMode = false;
+        let allRepoFilesCache = []; // 快取整個 repo 的 py/ipynb 檔案路徑
 
         window.onload = function() {
             // 動態更新 UI 上的讀取源標記
@@ -748,6 +796,11 @@
 
         // Request code content of a Python file and render with Prism highlight
         async function selectCodeFile(folderName, fileName, downloadUrl) {
+            if (isDiffMode) {
+                // 如果在比對模式中點選檔案，自動切回標準模式以避免衝突
+                toggleDiffMode();
+            }
+
             const container = document.getElementById('code-panel-container');
             const emptyState = document.getElementById('code-empty-state');
             const displayLayout = document.getElementById('code-display-layout');
@@ -813,6 +866,185 @@
             }
             
             document.body.removeChild(el);
+        }
+
+        // --- 檔案比對 (Diff) 系統核心邏輯 ---
+
+        // 切換比對模式 UI
+        async function toggleDiffMode() {
+            isDiffMode = !isDiffMode;
+            const diffControls = document.getElementById('diff-controls-bar');
+            const diffOutput = document.getElementById('diff-output-wrapper');
+            const standardCode = document.getElementById('standard-code-wrapper');
+            const modeText = document.getElementById('diff-mode-text');
+            const toggleBtn = document.getElementById('btn-toggle-diff');
+            
+            if (isDiffMode) {
+                // 開啟比對模式
+                diffControls.classList.remove('hidden');
+                diffControls.classList.add('flex');
+                standardCode.classList.add('hidden');
+                diffOutput.classList.remove('hidden');
+                
+                modeText.innerText = "退出比對模式";
+                toggleBtn.classList.replace('bg-slate-800', 'bg-amber-500/20');
+                
+                // 初次開啟時，自動向 GitHub 要求檔案清單樹狀圖
+                if (allRepoFilesCache.length === 0) {
+                    await loadAllRepoFilesForDiff();
+                }
+            } else {
+                // 關閉比對模式，恢復標準檢視
+                diffControls.classList.add('hidden');
+                diffControls.classList.remove('flex');
+                diffOutput.classList.add('hidden');
+                standardCode.classList.remove('hidden');
+                
+                modeText.innerText = "切換比對模式";
+                toggleBtn.classList.replace('bg-amber-500/20', 'bg-slate-800');
+            }
+        }
+
+        // 透過 API 一次抓取所有儲存庫內的檔案，並填入選單
+        async function loadAllRepoFilesForDiff() {
+            const baseSelect = document.getElementById('diff-base-select');
+            const targetSelect = document.getElementById('diff-target-select');
+            
+            baseSelect.innerHTML = '<option value="">正在載入檔案樹狀結構...</option>';
+            targetSelect.innerHTML = '<option value="">正在載入檔案樹狀結構...</option>';
+            
+            try {
+                // 透過 Git Trees API 遞迴抓取所有檔案路徑
+                const treeData = await fetchGitHubAPI(`git/trees/${config.readRef}?recursive=1`);
+                
+                // 篩選出 /codedata 下的 Python 和 Jupyter 檔案
+                allRepoFilesCache = treeData.tree.filter(item => 
+                    item.type === 'blob' && 
+                    item.path.startsWith('codedata/') && 
+                    (item.path.endsWith('.py') || item.path.endsWith('.ipynb'))
+                );
+                
+                // 排序：確保學號與時間整齊排列
+                allRepoFilesCache.sort((a, b) => a.path.localeCompare(b.path));
+                
+                // 產生下拉選單 HTML
+                let optionsHtml = '<option value="">請選擇要比對的檔案...</option>';
+                allRepoFilesCache.forEach(file => {
+                    const displayPath = file.path.replace('codedata/', '組員 ');
+                    optionsHtml += `<option value="${file.url}" data-path="${file.path}">${displayPath}</option>`;
+                });
+                
+                baseSelect.innerHTML = optionsHtml;
+                targetSelect.innerHTML = optionsHtml;
+                
+                // 若進來前有選取任何單一檔案，將其預設為 Target (目標檔案)
+                if (activeFileName && activeStudentId) {
+                    const activePath = `codedata/${activeStudentId}/${activeFileName}`;
+                    const targetOption = Array.from(targetSelect.options).find(opt => opt.dataset.path === activePath);
+                    if (targetOption) targetSelect.value = targetOption.value;
+                }
+
+            } catch (err) {
+                console.error("載入比對檔案清單失敗", err);
+                baseSelect.innerHTML = '<option value="">載入失敗</option>';
+                targetSelect.innerHTML = '<option value="">載入失敗</option>';
+                showToast('無法取得檔案清單以供比對', 'error');
+            }
+        }
+
+        // 執行雙選檔案的差異比對
+        async function executeDiff() {
+            const baseSelect = document.getElementById('diff-base-select');
+            const targetSelect = document.getElementById('diff-target-select');
+            
+            if (!baseSelect.value || !targetSelect.value) {
+                showToast('請在上方選單選擇兩個檔案以進行比對！', 'warning');
+                return;
+            }
+
+            const baseOpt = baseSelect.options[baseSelect.selectedIndex];
+            const targetOpt = targetSelect.options[targetSelect.selectedIndex];
+            
+            const diffOutput = document.getElementById('diff-output-wrapper');
+            diffOutput.innerHTML = `
+                <div class="flex flex-col items-center justify-center p-12 space-y-3">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
+                    <p class="text-sm font-mono text-slate-500">正在下載並運算程式碼差異...</p>
+                </div>
+            `;
+
+            try {
+                // 利用輔助函數拉取檔案內容，並自動轉譯 IPYNB
+                const baseContent = await fetchAndParseBlob(baseOpt.value, baseOpt.dataset.path);
+                const targetContent = await fetchAndParseBlob(targetOpt.value, targetOpt.dataset.path);
+                
+                // 使用 jsdiff 計算差異 (Git Patch)
+                const patch = Diff.createTwoFilesPatch(
+                    baseOpt.dataset.path.replace('codedata/', ''), 
+                    targetOpt.dataset.path.replace('codedata/', ''), 
+                    baseContent, 
+                    targetContent,
+                    "舊版本 (基準)",
+                    "新版本 (目標)"
+                );
+                
+                // 透過 diff2html 渲染美觀的雙欄視圖 HTML
+                const html = Diff2Html.html(patch, {
+                    drawFileList: false,
+                    matching: 'lines',
+                    outputFormat: 'side-by-side' // 使用精美的左右分割對比模式
+                });
+                
+                diffOutput.innerHTML = html;
+                
+            } catch (err) {
+                console.error("比對運算失敗:", err);
+                diffOutput.innerHTML = `<div class="p-6 text-center text-rose-500 font-bold">無法比對檔案：${err.message}</div>`;
+                showToast('檔案比對失敗', 'error');
+            }
+        }
+
+        // 從 GitHub Blob API 拉取檔案並自動處理 IPYNB 的輔助函式
+        async function fetchAndParseBlob(blobUrl, path) {
+            const response = await fetch(blobUrl, {
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Authorization': credentialCombinedValue ? `token ${credentialCombinedValue.trim()}` : ''
+                }
+            });
+            if (!response.ok) throw new Error("無法下載檔案原始內容");
+            const data = await response.json();
+            
+            // GitHub API 回傳的 Blob 為 Base64 編碼，且可能包含中文 UTF-8
+            const binaryString = window.atob(data.content);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            const textContent = new TextDecoder('utf-8').decode(bytes);
+
+            // 遇到 IPYNB 檔案時，提取並轉換程式區塊
+            if (path.endsWith('.ipynb')) {
+                try {
+                    const notebook = JSON.parse(textContent);
+                    let pyCode = "# Auto-generated from Notebook\n\n";
+                    if (notebook.cells && Array.isArray(notebook.cells)) {
+                        for (const cell of notebook.cells) {
+                            if (cell.cell_type === 'code') {
+                                const sourceCode = Array.isArray(cell.source) ? cell.source.join('') : cell.source;
+                                if (sourceCode.trim()) {
+                                    pyCode += "# --- Code Cell ---\n" + sourceCode + "\n\n";
+                                }
+                            }
+                        }
+                    }
+                    return pyCode;
+                } catch (e) {
+                    return textContent;
+                }
+            }
+            
+            return textContent;
         }
 
         // Download current code file as .py file
