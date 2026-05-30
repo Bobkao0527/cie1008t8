@@ -127,7 +127,7 @@
             <!-- Header Global Shortcut Links (OneDrive & Google Drive) -->
             <div class="hidden lg:flex items-center space-x-3">
                 <a href="https://www.canva.com/design/DAHLG020HBY/3arjTKgh0LgurYdZUlXqPQ/edit" target="_blank" class="flex items-center space-x-2 text-xs text-slate-300 hover:text-emerald-400 transition-colors bg-slate-900 px-3 py-2 rounded-xl border border-slate-800">
-                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <svg class="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
                     <span>線上簡報</span>
@@ -213,31 +213,29 @@
                     </button>
                     <input type="file" id="file-uploader-input" accept=".py,.ipynb" class="hidden" onchange="handleFileSelection(event)">
 
-                    <!-- Team Cloud Resources Shortcuts -->
+                    <!-- Team Cloud Resources Shortcuts (Fixed style and class typo) -->
+                    <div class="flex items-center gap-3">
+                        <a href="https://www.canva.com/design/DAHLG020HBY/3arjTKgh0LgurYdZUlXqPQ/edit" target="_blank" class="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2.5 rounded-xl border border-slate-700/60 text-sm font-medium transition-all duration-150">
+                            <svg class="w-4 h-4 text-pink-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                            <span>線上簡報</span>
+                        </a>
 
-                    <a href="https://www.canva.com/design/DAHLG020HBY/3arjTKgh0LgurYdZUlXqPQ/edit" 
-                       target="_blank" 
-                       rel="noopener noreferrer" 
-                       class="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-slate-700/30">
-                        <svg class="w-4 h-4 text-cyan-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
-                        <span>線上簡報</span>
-                    </a>
-                    
-                    <a href="https://onedrive.live.com/:w:/g/personal/635910fcd0a6af46/IQCycNIR_jrCQqqKwdIpie4LAc27eum7U-wIXoGsqhhs4wA?rtime=XtEYuFu23kg&redeem=aHR0cHM6Ly8xZHJ2Lm1zL3cvYy82MzU5MTBmY2QwYTZhZjQ2L0lRQ3ljTklSX2pyQ1FxcUt3ZElwaWU0TEFjMjdldW03VS13SVhvR3NxaGhzNHdBP2U9bE5HVzRW" target="_blank" class="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2.5 rounded-xl border border-slate-700/60 text-sm font-medium transition-all duration-150">
-                        <svg class="w-4 h-4 text-cyan-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                        </svg>
-                        <span>內容文件檔</span>
-                    </a>
+                        <a href="https://onedrive.live.com/:w:/g/personal/635910fcd0a6af46/IQCycNIR_jrCQqqKwdIpie4LAc27eum7U-wIXoGsqhhs4wA?rtime=XtEYuFu23kg&redeem=aHR0cHM6Ly8xZHJ2Lm1zL3cvYy82MzU5MTBmY2QwYTZhZjQ2L0lRQ3ljTklSX2pyQ1FxcUt3ZElwaWU0TEFjMjdldW03VS13SVhvR3NxaGhzNHdBP2U9bE5HVzRW" target="_blank" class="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2.5 rounded-xl border border-slate-700/60 text-sm font-medium transition-all duration-150">
+                            <svg class="w-4 h-4 text-cyan-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                            </svg>
+                            <span>內容文件檔</span>
+                        </a>
 
-                    <a href="https://drive.google.com/drive/folders/14BHEqSWC53e1uC5Znsdy5uLNQSLeq43x" target="_blank" class="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2.5 rounded-xl border border-slate-700/60 text-sm font-medium transition-all duration-150">
-                        <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
-                        </svg>
-                        <span>素材雲端硬碟</span>
-                    </a>
+                        <a href="https://drive.google.com/drive/folders/14BHEqSWC53e1uC5Znsdy5uLNQSLeq43x" target="_blank" class="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2.5 rounded-xl border border-slate-700/60 text-sm font-medium transition-all duration-150">
+                            <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
+                            </svg>
+                            <span>素材雲端硬碟</span>
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -283,7 +281,7 @@
                 <div class="lg:col-span-8 flex flex-col">
                     <div class="text-xs font-semibold uppercase tracking-wider text-slate-500 px-1 mb-3 flex justify-between items-center">
                         <span>目前選取的檔案內容預覽</span>
-                        <span id="current-viewing-path" class="text-slate-400 font-mono normal-case">無選取任何檔案</span>
+                        <span id="current-viewing-path" class="text-slate-400 font-mono normal-case">無選取 any 檔案</span>
                     </div>
                     
                     <div id="code-panel-container" class="glass-panel rounded-2xl p-6 flex flex-col justify-center items-center text-center flex-grow min-h-[450px] relative bg-slate-900/40">
@@ -648,7 +646,7 @@
                         <div class="flex items-center space-x-2.5 min-w-0 flex-1">
                             <div class="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 shrink-0">
                                 <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                                 </svg>
                             </div>
                             <div class="truncate">
